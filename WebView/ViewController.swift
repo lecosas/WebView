@@ -36,8 +36,10 @@ class ViewController: UIViewController, WKNavigationDelegate {
         
         let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         let refresh = UIBarButtonItem(barButtonSystemItem: .refresh, target: webView, action: #selector(webView.reload))
+        let back = UIBarButtonItem(title: "Back", style: .plain, target: webView, action: #selector(webView.goBack))
+        let foward = UIBarButtonItem(title: "Foward", style: .plain, target: webView, action: #selector(webView.goForward))
         
-        toolbarItems = [progressButton, spacer, refresh]
+        toolbarItems = [progressButton, spacer, back, foward, refresh]
         navigationController?.isToolbarHidden = false
         
         webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
@@ -66,16 +68,20 @@ class ViewController: UIViewController, WKNavigationDelegate {
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         let url = navigationAction.request.url
-        
+
         if let host = url?.host {
-            print(host)
             for website in websites {
+                print(website)
                 if host.contains(website) {
                     decisionHandler(.allow)
                     return
                 }
             }
         }
+        
+        let ac = UIAlertController(title: "Blocked", message: "That URL is not allowed.", preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "OK", style: .cancel))
+        present(ac, animated: true)
         
         decisionHandler(.cancel)
     }
