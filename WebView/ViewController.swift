@@ -13,7 +13,8 @@ class ViewController: UIViewController, WKNavigationDelegate {
 
     var webView: WKWebView!
     var progressView: UIProgressView!
-    var websites = ["apple.com", "cuecastore.com.br"]
+    var initialWebsite: String?
+    var websites = [String]()
     
     override func loadView() {
         webView = WKWebView()
@@ -24,11 +25,13 @@ class ViewController: UIViewController, WKNavigationDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let url = URL(string: websites[0])!
+        guard let initialURL = initialWebsite else { return }
+        
+        let url = URL(string: "https://" + initialURL)!
         webView.load(URLRequest(url: url))
         webView.allowsBackForwardNavigationGestures = true
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Open", style: .plain, target: self, action: #selector(openTapped))
+        //navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Open", style: .plain, target: self, action: #selector(openTapped))
         
         progressView = UIProgressView(progressViewStyle: .default)
         progressView.sizeToFit()
@@ -45,11 +48,13 @@ class ViewController: UIViewController, WKNavigationDelegate {
         webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
     }
     
+    /*
     func openPage(action: UIAlertAction) {
         let url = URL(string: "https://" + action.title!)!
         webView.load(URLRequest(url: url))
-    }
+    }*/
     
+    /*
     @objc func openTapped() {
         let ac = UIAlertController(title: "Open page...", message: nil, preferredStyle: .actionSheet)
         
@@ -64,28 +69,31 @@ class ViewController: UIViewController, WKNavigationDelegate {
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         title = webView.title
-    }
+    }*/
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         let url = navigationAction.request.url
 
         if let host = url?.host {
             for website in websites {
-                print(website)
+                //print(host)
                 if host.contains(website) {
                     decisionHandler(.allow)
                     return
                 }
             }
+        } else {
+            decisionHandler(.allow)
+            return
         }
         
         let ac = UIAlertController(title: "Blocked", message: "That URL is not allowed.", preferredStyle: .alert)
         ac.addAction(UIAlertAction(title: "OK", style: .cancel))
         present(ac, animated: true)
         
+        //print(url)
         decisionHandler(.cancel)
     }
-    
     
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
